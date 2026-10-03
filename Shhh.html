@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shhh</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(145deg, #fff5f7, #f8efff);
+    color: #29232a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .game {
+    width: min(680px, 100%);
+    background: rgba(255,255,255,.9);
+    border: 1px solid rgba(80,50,70,.1);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(70,40,60,.12);
+  }
+  .center { text-align:center; }
+  .secret { font-size: 42px; margin-bottom: 4px; }
+  h1 {
+    font-size: clamp(42px, 11vw, 72px);
+    margin: 8px 0 10px;
+    letter-spacing: -3px;
+  }
+  h2 {
+    font-size: clamp(23px, 5vw, 31px);
+    line-height: 1.25;
+    margin: 18px 0 22px;
+  }
+  p { line-height: 1.6; }
+  .subtle { color:#766d75; }
+  .badge {
+    display:inline-block;
+    padding:7px 11px;
+    border-radius:999px;
+    background:#f8e8ed;
+    color:#8c4059;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.08em;
+  }
+  .progress {
+    height:7px;
+    background:#eee7eb;
+    border-radius:99px;
+    overflow:hidden;
+    margin:18px 0 26px;
+  }
+  .bar {
+    height:100%;
+    width:0;
+    background:#b95d79;
+    transition:width .3s ease;
+  }
+  button {
+    width:100%;
+    border:1px solid #e3d9de;
+    background:white;
+    color:#29232a;
+    border-radius:16px;
+    padding:15px 16px;
+    margin:6px 0;
+    font-size:16px;
+    font-weight:650;
+    text-align:left;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  button:hover { transform:translateY(-1px); background:#fff6f8; border-color:#d8a7b7; }
+  button:disabled { cursor:default; opacity:.8; transform:none; }
+  .primary {
+    background:#9f4964;
+    color:white;
+    border-color:#9f4964;
+    text-align:center;
+  }
+  .primary:hover { background:#8e3f58; border-color:#8e3f58; }
+  .feedback {
+    margin-top:14px;
+    padding:13px 15px;
+    border-radius:15px;
+    background:#faf6f8;
+    border:1px solid #eadfe4;
+    line-height:1.45;
+  }
+  .final h1 {
+    font-size:clamp(32px, 8vw, 52px);
+    letter-spacing:-2px;
+  }
+  .heart { font-size:52px; }
+  .small { font-size:13px; }
+</style>
+</head>
+<body>
+<div class="game" id="game"></div>
+
+<script>
+const questions = [
+  {
+    q: "What does Ki say when he gets a call from someone while he’s already on a call with Ammmi?",
+    options: [
+      "My*",
+      "My* mon",
+      "Ammmi oru minute",
+      "Ithaaaaaaraaaaa (high pitch), Ammmi oru minute mole (base)"
+    ],
+    correct: 3
+  },
+  {
+    q: "Who loves who more?",
+    options: [
+      "Ki loves Ammmi more",
+      "Ammmi loves Ki more",
+      "Ammmi loves that Ki loves her more",
+      "Ki loves Ammmi&Ki the most"
+    ],
+    correct: 3
+  },
+  {
+    q: "What could Ki potentially name our child if it’s a boy? 🙂",
+    options: [
+      "Vetri",
+      "Maaran",
+      "Jarvis",
+      "(Sammathikilla ninne)"
+    ],
+    correct: 3
+  },
+  {
+    q: "What about Ammmi annoys Ki the most?",
+    options: [
+      "Not picking up his call when she was already there a minute ago texting",
+      "One minute being lovey, the next minute wanting to kill him",
+      "Never sleeping on time",
+      "All of the above and a lot more that he’s still not seen yet"
+    ],
+    correct: 3
+  },
+  {
+    q: "Who describes Ki the most?",
+    options: [
+      "Bruce Banner when he gets angry",
+      "Tony Stark (And you know why)",
+      "Kanjirappally Kunjoonj",
+      "Vikram in Anniyan 🙂"
+    ],
+    correct: 3
+  }
+];
+
+let current = 0;
+let score = 0;
+
+const game = document.getElementById("game");
+
+function opening() {
+  game.innerHTML = `
+    <div class="center">
+      <div class="secret">🤫</div>
+      <h1>Shhh</h1>
+      <h2 style="font-size:28px;margin-top:8px;">Hi Baby</h2>
+      <p class="subtle">I made something for you. ❤️</p>
+      <button class="primary" onclick="showQuestion()">Click & Start</button>
+    </div>
+  `;
+}
+
+function showQuestion() {
+  const x = questions[current];
+  game.innerHTML = `
+    <span class="badge">QUESTION ${current + 1} OF ${questions.length}</span>
+    <div class="progress"><div class="bar" style="width:${(current / questions.length) * 100}%"></div></div>
+    <h2>${x.q}</h2>
+    <div id="options"></div>
+    <div id="feedback"></div>
+  `;
+
+  const options = document.getElementById("options");
+  x.options.forEach((option, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = String.fromCharCode(65 + i) + ". " + option;
+    btn.onclick = () => answer(i);
+    options.appendChild(btn);
+  });
+}
+
+function answer(i) {
+  const x = questions[current];
+  const buttons = document.querySelectorAll("#options button");
+  buttons.forEach(b => b.disabled = true);
+
+  const correct = i === x.correct;
+  if (correct) score += 10;
+
+  document.getElementById("feedback").innerHTML = `
+    <div class="feedback">
+      ${correct
+        ? "😂 Correct. Boyfriend credentials remain intact."
+        : "😂 Interesting answer. Ammmi has taken note."}
+    </div>
+  `;
+
+  setTimeout(() => {
+    if (!correct) {
+      showQuestion();
+      return;
+    }
+    current++;
+    if (current < questions.length) showQuestion();
+    else finalQuestion();
+  }, 900);
+}
+
+function finalQuestion() {
+  game.innerHTML = `
+    <span class="badge">FINAL QUESTION</span>
+    <div class="progress"><div class="bar" style="width:100%"></div></div>
+    <h2>Why do you think Ammmi sent you this difficult of a game to play?</h2>
+    <p class="subtle">There is no option or answer for this one. Just think about it. 🙂</p>
+    <button class="primary" onclick="finalMessage()">Continue ❤️</button>
+  `;
+}
+
+function finalMessage() {
+  game.innerHTML = `
+    <div class="center final">
+      <div class="heart">❤️</div>
+      <h1>Because I wanted to make you smile. ❤️</h1>
+      <p>Happy Boyfriend’s Day to my favourite person.</p>
+      <p>You are my favourite person to annoy, my favourite person to talk to, my favourite person to miss, and the person who can make me want to hug you and strangle you within the same five minutes.</p>
+      <p><strong>I love you, baby.</strong></p>
+      <p><strong>To being one team - always and forever ❤️</strong></p>
+    </div>
+  `;
+}
+
+opening();
+</script>
+</body>
+</html>
